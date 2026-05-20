@@ -234,115 +234,114 @@ print("=== JOGO INICIADO ===")
     </form>
     <iframe name="hidden_iframe" id="hidden_iframe" style="display:none;" onload="if(submitted) { alert('Teste enviado com sucesso ao Professor!'); window.location.reload(); }"></iframe>
 
-    <script>
-        let isTestUnlocked = false;
-        let submitted = false;
+<script>
+    let isTestUnlocked = false;
+    let submitted = false;
 
-        // Configurar CodeMirror
-        const editor = CodeMirror.fromTextArea(document.getElementById("python-editor"), {
-            mode: "python",
-            theme: "dracula",
-            lineNumbers: true,
-            indentUnit: 4,
-            tabSize: 4,
-            lineWrapping: true
+    // Configurar CodeMirror
+    const editor = CodeMirror.fromTextArea(document.getElementById("python-editor"), {
+        mode: "python",
+        theme: "dracula",
+        lineNumbers: true,
+        indentUnit: 4,
+        tabSize: 4,
+        lineWrapping: true
+    });
+
+    // Configuração das saídas de texto do Skulpt
+    function outf(text) { 
+        const mypre = document.getElementById("console-output"); 
+        mypre.innerText = mypre.innerText + text; 
+    } 
+    
+    // Configuração para o input nativo funcionar via prompt do browser
+    function builtinRead(x) {
+        if (Sk.builtinFiles === undefined || Sk.builtinFiles["files"][x] === undefined)
+            throw "File not found: '" + x + "'";
+        return Sk.builtinFiles["files"][x];
+    }
+
+    // Execução do Python com Skulpt
+    function runPython() { 
+        const program = editor.getValue(); 
+        const outputConsole = document.getElementById("console-output"); 
+        outputConsole.innerText = ''; 
+        outputConsole.style.color = "var(--accent-color)";
+
+        Sk.pre = "console-output";
+        Sk.configure({
+            output: outf,
+            read: builtinRead,
+            inputfun: function (prompt) {
+                return window.prompt(prompt);
+            }
+        }); 
+
+        var myPromise = Sk.misceval.asyncToPromise(function() {
+            return Sk.importMainWithBody("<stdin>", false, program, true);
         });
-
-        // Configuração das saídas de texto do Skulpt
-        function outf(text) { 
-            const mypre = document.getElementById("console-output"); 
-            mypre.innerText = mypre.innerText + text; 
-        } 
         
-        // Configuração para o input nativo funcionar via prompt do browser
-        function builtinRead(x) {
-            if (Sk.builtinFiles === undefined || Sk.builtinFiles["files"][x] === undefined)
-                throw "File not found: '" + x + "'";
-            return Sk.builtinFiles["files"][x];
+        myPromise.then(function(mod) {
+            // Sucesso
+        }, function(err) {
+            outputConsole.style.color = "var(--danger-color)";
+            outputConsole.innerText = err.toString();
+        });
+    } 
+
+    // Segurança e Fluxo de Páginas
+    function unlockTest() {
+        const name = document.getElementById("student-name").value.trim();
+        const pass = document.getElementById("test-password").value;
+
+        if (name !== "" && pass === "testemod6") {
+            document.getElementById("login-overlay").style.display = "none";
+            document.getElementById("display-student-name").innerText = "Aluno: " + name;
+            isTestUnlocked = true;
+            setupFocusSecurity();
+        } else {
+            document.getElementById("login-error").style.display = "block";
         }
+    }
 
-        // Execução do Python com Skulpt
-        function runPython() { 
-            const program = editor.getValue(); 
-            const outputConsole = document.getElementById("console-output"); 
-            outputConsole.innerText = ''; 
-            outputConsole.style.color = "var(--accent-color)";
-
-            Sk.pre = "console-output";
-            // Injeta a função de input nativo
-            Sk.configure({
-                output: outf,
-                read: builtinRead,
-                inputfun: function (prompt) {
-                    return window.prompt(prompt);
-                }
-            }); 
-
-            var myPromise = Sk.misceval.asyncToPromise(function() {
-                return Sk.importMainWithBody("<stdin>", false, program, true);
-            });
-            
-            myPromise.then(function(mod) {
-                // Sucesso
-            }, function(err) {
-                // Captura erros de sintaxe ou execução
-                outputConsole.style.color = "var(--danger-color)";
-                outputConsole.innerText = err.toString();
-            });
-        } 
-
-        // Segurança e Fluxo de Páginas
-        function unlockTest() {
-            const name = document.getElementById("student-name").value.trim();
-            const pass = document.getElementById("test-password").value;
-
-            if (name !== "" && pass === "testemod6") {
-                document.getElementById("login-overlay").style.display = "none";
-                document.getElementById("display-student-name").innerText = "Aluno: " + name;
-                isTestUnlocked = true;
-                setupFocusSecurity();
-            } else {
-                document.getElementById("login-error").style.display = "block";
+    // SISTEMA ANTI-CÁBULA CORRIGIDO (Ignora os prompts de input)
+    function setupFocusSecurity() {
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'hidden' && isTestUnlocked && !submitted) {
+                document.getElementById("blur-overlay").style.display = "flex";
             }
+        });
+    }
+
+    function unlockFocus() {
+        const pass = document.getElementById("focus-password").value;
+        if (pass === "bananas") {
+            document.getElementById("blur-overlay").style.display = "none";
+            document.getElementById("focus-password").value = "";
+            document.getElementById("blur-error").style.display = "none";
+        } else {
+            document.getElementById("blur-error").style.display = "block";
         }
+    }
 
-        function setupFocusSecurity() {
-            window.addEventListener('blur', () => {
-                if(isTestUnlocked && !submitted) {
-                    document.getElementById("blur-overlay").style.display = "flex";
-                }
-            });
+    function toggleEnunciado() {
+        const content = document.getElementById("enunciado-content");
+        const btn = document.getElementById("btn-enunciado-toggle");
+        if (content.style.display === "none" || content.style.display === "") {
+            content.style.display = "block";
+            btn.innerText = "Ocultar";
+        } else {
+            content.style.display = "none";
+            btn.innerText = "Mostrar";
         }
+    }
 
-        function unlockFocus() {
-            const pass = document.getElementById("focus-password").value;
-            if (pass === "bananas") {
-                document.getElementById("blur-overlay").style.display = "none";
-                document.getElementById("focus-password").value = "";
-                document.getElementById("blur-error").style.display = "none";
-            } else {
-                document.getElementById("blur-error").style.display = "block";
-            }
-        }
+    function submitTest() {
+        const confirmation = confirm("Pretendes entregar o teste? Não conseguirás alterar mais nada.");
+        if (!confirmation) return;
 
-        function toggleEnunciado() {
-            const content = document.getElementById("enunciado-content");
-            const btn = document.getElementById("btn-enunciado-toggle");
-            if (content.style.display === "none" || content.style.display === "") {
-                content.style.display = "block";
-                btn.innerText = "Ocultar";
-            } else {
-                content.style.display = "none";
-                btn.innerText = "Mostrar";
-            }
-        }
-
-        function submitTest() {
-            const confirmation = confirm("Pretendes entregar o teste? Não conseguirás alterar mais nada.");
-            if (!confirmation) return;
-
-            const studentName = document.getElementById("student-name").value.trim();
-            const studentCode = editor.getValue();
+        const studentName = document.getElementById("student-name").value.trim();
+        const studentCode = editor.getValue();
 
             document.getElementById("form-student-name").value = studentName;
             document.getElementById("form-student-code").value = studentCode;
@@ -350,6 +349,6 @@ print("=== JOGO INICIADO ===")
             submitted = true;
             document.getElementById("google-form").submit();
         }
-    </script>
+</script>
 </body>
 </html>
