@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GPSI - Teste Prático de Programação</title>
+    <script src="https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.12/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.12/theme/dracula.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.12/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.12/mode/python/python.min.js"></script>
+    
+    <style>
+        :root {
+            --bg-color: #0d1117;
+            --panel-bg: #161b22;
+            --accent-color: #00ff66;
+            --danger-color: #ff3333;
+            --text-color: #c9d1d9;
+            --border-color: #30363d;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+
+        /* Telas de Bloqueio (Login e Anti-Cábula) */
+        .overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(13, 17, 23, 0.95);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: all 0.3s ease;
+        }
+
+        .overlay-card {
+            background: var(--panel-bg);
+            padding: 40px;
+            border-radius: 8px;
+            border: 1px solid var(--accent-color);
+            box-shadow: 0 0 20px rgba(0, 255, 102, 0.2);
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+        }
+
+        #blur-overlay {
+            background: rgba(255, 51, 51, 0.95);
+            display: none;
+        }
+        #blur-overlay .overlay-card {
+            border-color: var(--danger-color);
+            box-shadow: 0 0 20px rgba(255, 51, 51, 0.4);
+        }
+
+        /* Inputs e Botões Gerais */
+        input[type="text"], input[type="password"] {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            background: #21262d;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: #fff;
+            box-sizing: border-box;
+        }
+        input:focus {
+            outline: none;
+            border-color: var(--accent-color);
+        }
+
+        button {
+            background: transparent;
+            color: var(--accent-color);
+            border: 1px solid var(--accent-color);
+            padding: 12px 24px;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        button:hover {
+            background: var(--accent-color);
+            color: #000;
+            box-shadow: 0 0 10px rgba(0, 255, 102, 0.4);
+        }
+
+        /* Container Principal */
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 20px;
+            margin-bottom: 20px;
+        }
+
+        .student-info {
+            font-size: 1.1em;
+            color: var(--accent-color);
+        }
+
+        /* Área de Trabalho (Split Screen) */
+        .workspace {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            height: calc(100vh - 200px);
+            min-height: 500px;
+        }
+
+        .panel {
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .panel-header {
+            background: #1f242c;
+            padding: 10px 20px;
+            border-bottom: 1px solid var(--border-color);
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* Enunciado Modal/Collapsible */
+        #enunciado-content {
+            padding: 20px;
+            overflow-y: auto;
+            flex-grow: 1;
+            display: none;
+            background: #161b22;
+            line-height: 1.6;
+        }
+
+        .code-area {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Forçar CodeMirror a ocupar 100% da altura disponível */
+        .CodeMirror {
+            flex-grow: 1;
+            height: 100% !important;
+            font-size: 14px;
+        }
+
+        /* Consola de Output */
+        .output-area {
+            background: #05070a;
+            color: #00ff66;
+            font-family: 'Courier New', Courier, monospace;
+            padding: 15px;
+            flex-grow: 1;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            box-sizing: border-box;
+        }
+
+        .action-bar {
+            padding: 10px 20px;
+            background: #1f242c;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .btn-submit {
+            border-color: #58a6ff;
+            color: #58a6ff;
+        }
+        .btn-submit:hover {
+            background: #58a6ff;
+            color: #000;
+            box-shadow: 0 0 10px rgba(88, 166, 255, 0.4);
+        }
+
+        /* Estilo para listas no enunciado */
+        ul, ol {
+            padding-left: 20px;
+        }
+        li {
+            margin-bottom: 5px;
+        }
+        code {
+            background: #282c34;
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: #e06c75;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="login-overlay" class="overlay">
+        <div class="overlay-card">
+            <h2>💻 GPSI - Módulo 6</h2>
+            <p style="color: #8b949e;">Introduza os seus dados para iniciar o teste.</p>
+            <input type="text" id="student-name" placeholder="Nome Completo do Aluno" required>
+            <input type="password" id="test-password" placeholder="Palavra-passe do Teste">
+            <p id="login-error" style="color: var(--danger-color); display:none; font-size: 14px;">Aviso: Nome ou Password incorretos!</p>
+            <button onclick="unlockTest()">Iniciar Teste</button>
+        </div>
+    </div>
+
+    <div id="blur-overlay" class="overlay">
+        <div class="overlay-card">
+            <h2 style="color: #fff;">⚠️ TESTE BLOQUEADO</h2>
+            <p style="text-align: justify;">A página perdeu o foco detetando uma possível saída da zona do teste. Chame o Professor para desbloquear.</p>
+            <input type="password" id="focus-password" placeholder="Password do Professor">
+            <p id="blur-error" style="color: yellow; display:none; font-size: 14px;">Password de desbloqueio incorreta.</p>
+            <button onclick="unlockFocus()" style="color: #fff; border-color: #fff;">Desbloquear</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <header>
+            <div>
+                <h1 style="margin: 0; color: #fff; font-size: 1.5em;">Exame Prático: Python Dinâmico</h1>
+                <small style="color: #8b949e;">Módulo 6: Estruturas Complexas e Coleções</small>
+            </div>
+            <div class="student-info" id="display-student-name">Aluno: Prontificado</div>
+        </header>
+
+        <div class="workspace">
+            <div style="display: flex; flex-direction: column; gap: 20px;">
+                <div class="panel" style="flex-grow: 0;">
+                    <div class="panel-header">
+                        <span>📝 Enunciado do Problema</span>
+                        <button onclick="toggleEnunciado()" id="btn-enunciado-toggle" style="padding: 5px 10px; font-size: 12px;">Mostrar</button>
+                    </div>
+                    <div id="enunciado-content">
+                        <strong>Problema – Jogo: Adivinha o número com histórico (Nível Avançado)</strong>
+                        <p>Cria um programa em Python que simule um jogo interativo com os seguintes requisitos:</p>
+                        <ul>
+                            <li>Gera um número aleatório entre 1 e 50: <code>numero_inteiro = random.randint(1, 50)</code></li>
+                            <li>O utilizador tenta adivinhar o número consecutivamente através de inputs.</li>
+                            <li>Guarda todas as tentativas numa lista: <code>tentativas = []</code></li>
+                            <li><strong>A cada tentativa errada:</strong>
+                                <ul>
+                                    <li>Diz se o número secreto é maior ou menor que o palpite.</li>
+                                    <li>Adiciona o palpite à lista de tentativas.</li>
+                                </ul>
+                            </li>
+                            <li><strong>Quando acertar, mostra:</strong>
+                                <ul>
+                                    <li>O número total de tentativas.</li>
+                                    <li>A lista completa de tentativas realizadas.</li>
+                                    <li>A <em>melhor tentativa</em> (a mais próxima do número secreto antes de acertar).</li>
+                                </ul>
+                            </li>
+                        </ul>
+                        <strong>⚡ Desafios Avançados (Obrigatório):</strong>
+                        <ol>
+                            <li>Mostrar apenas tentativas únicas na lista final (remover duplicados).</li>
+                            <li>Impedir o processamento e avisar se forem introduzidos números fora do intervalo.</li>
+                            <li>Dar uma dica especial (ex: "Estás a ferver!") se o palpite estiver a uma distância inferior ou igual a 5 do número correto.</li>
+                        </ol>
+                        <strong>Objetivos de Avaliação:</strong> Listas dinâmicas, estruturas de repetição e decisão (<code>while</code> + <code>if/elif/else</code>), lógica complexa e controlo de erros.
+                    </div>
+                </div>
+
+                <div class="panel" style="flex-grow: 1;">
+                    <div class="panel-header">💻 Consola de Execução (Output)</div>
+                    <div class="output-area" id="console-output">O output do teu código aparecerá aqui após clicares em "Executar Código"...</div>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-header">✒️ Editor de Código Python</div>
+                <div class="code-area">
+                    <textarea id="python-editor"># Desenvolve o teu código aqui
+import random
+
+# Exemplo inicial de estrutura
+numero_inteiro = random.randint(1, 50)
+tentativas = []
+
+print("Bem-vindo ao Jogo de Adivinhação!")
+</textarea>
+                </div>
+                <div class="action-bar">
+                    <button onclick="runPython()" style="background: rgba(0,255,102,0.1);">▶ Executar Código (Run)</button>
+                    <button onclick="submitTest()" class="btn-submit">📤 Entregar Teste</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <form id="google-form" action="https://docs.google.com/forms/d/e/1FAIpQLSdlkzy8ThUISVOpvA-USwjDyX0WcfzFxjbaHlgFVobgsn6IuA/formResponse" method="POST" target="hidden_iframe" style="display: none;">
+        <input type="hidden" name="entry.1736859903" id="form-student-name">
+        <input type="hidden" name="entry.694197159" id="form-student-code">
+    </form>
+    <iframe name="hidden_iframe" id="hidden_iframe" style="display:none;" onload="if(submitted) { alert('Teste enviado com sucesso ao Professor!'); window.location.reload(); }"></iframe>
+
+    <script>
+        let pyodideInstance = null;
+        let isTestUnlocked = false;
+        let submitted = false;
+
+        // Inicializar o Editor CodeMirror
+        const editor = CodeMirror.fromTextArea(document.getElementById("python-editor"), {
+            mode: "python",
+            theme: "dracula",
+            lineNumbers: true,
+            indentUnit: 4,
+            tabSize: 4,
+            lineWrapping: true
+        });
+
+        // Carregar o interpretador Pyodide em Background
+        async function initPyodide() {
+            pyodideInstance = await loadPyodide();
+            document.getElementById("console-output").innerText = "=== Interpretador Python pronto. Podes começar! ===";
+        }
+        initPyodide();
+
+        // Login e Desbloqueio do Teste
+        function unlockTest() {
+            const name = document.getElementById("student-name").value.trim();
+            const pass = document.getElementById("test-password").value;
+
+            if (name !== "" && pass === "testemod6") {
+                document.getElementById("login-overlay").style.display = "none";
+                document.getElementById("display-student-name").innerText = "Aluno: " + name;
+                isTestUnlocked = true;
+                
+                // Ativar a escuta de perda de foco apenas após logado
+                setupFocusSecurity();
+            } else {
+                document.getElementById("login-error").style.display = "block";
+            }
+        }
+
+        // Sistema Anti-Cábula (Focus Security)
+        function setupFocusSecurity() {
+            window.addEventListener('blur', () => {
+                if(isTestUnlocked && !submitted) {
+                    document.getElementById("blur-overlay").style.display = "flex";
+                }
+            });
+        }
+
+        function unlockFocus() {
+            const pass = document.getElementById("focus-password").value;
+            if (pass === "bananas") {
+                document.getElementById("blur-overlay").style.display = "none";
+                document.getElementById("focus-password").value = "";
+                document.getElementById("blur-error").style.display = "none";
+            } else {
+                document.getElementById("blur-error").style.display = "block";
+            }
+        }
+
+        // Mostrar / Ocultar Enunciado
+        function toggleEnunciado() {
+            const content = document.getElementById("enunciado-content");
+            const btn = document.getElementById("btn-enunciado-toggle");
+            if (content.style.display === "none" || content.style.display === "") {
+                content.style.display = "block";
+                btn.innerText = "Ocultar";
+            } else {
+                content.style.display = "none";
+                btn.innerText = "Mostrar";
+            }
+        }
+
+        // Executar o Código Python com Pyodide
+        async function runPython() {
+            if (!pyodideInstance) {
+                alert("O interpretador Python ainda está a carregar. Aguarda um momento.");
+                return;
+            }
+
+            const outputConsole = document.getElementById("console-output");
+            outputConsole.innerText = "A executar...\n";
+            const code = editor.getValue();
+
+            // Redirecionar o stdout (print) do Python para a nossa consola HTML
+            pyodideInstance.runPython(`
+                import sys
+                import io
+                sys.stdout = io.StringIO()
+            `);
+
+            try {
+                let cleanCode = code;
+                if (code.includes("input(")) {
+                    outputConsole.innerText = "⚠️ Nota: Para testar códigos com múltiplos 'input()' seguidos no browser de forma nativa, sugere-se simular variáveis fixas temporárias ou testar por partes.\n\nExecutando:\n";
+                }
+
+                await pyodideInstance.runPythonAsync(cleanCode);
+                let stdout = pyodideInstance.runPython("sys.stdout.getvalue()");
+                outputConsole.innerText += stdout || "Código executado com sucesso (sem outputs de print).";
+            } catch (err) {
+                outputConsole.style.color = "var(--danger-color)";
+                outputConsole.innerText = "Erro no Código:\n" + err;
+                return;
+            }
+            outputConsole.style.color = "var(--accent-color)";
+        }
+
+        // Enviar os dados ao Google Forms
+        function submitTest() {
+            const confirmation = confirm("Tens a certeza que pretendes entregar o teste? Não poderás fazer mais alterações.");
+            if (!confirmation) return;
+
+            const studentName = document.getElementById("student-name").value.trim();
+            const studentCode = editor.getValue();
+
+            document.getElementById("form-student-name").value = studentName;
+            document.getElementById("form-student-code").value = studentCode;
+
+            submitted = true;
+            document.getElementById("google-form").submit();
+        }
+    </script>
+</body>
+</html>
