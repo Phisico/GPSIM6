@@ -4,7 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GPSI - Teste Prático de Programação</title>
-    <script src="https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js"></script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/skulpt@1.2.0/dist/skulpt.min.js" type="text/javascript"></script>
+    <script src="https://cdn.jsdelivr.net/npm/skulpt@1.2.0/dist/skulpt-stdlib.js" type="text/javascript"></script>
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.12/codemirror.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.12/theme/dracula.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.12/codemirror.min.js"></script>
@@ -24,33 +27,25 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: var(--bg-color);
             color: var(--text-color);
-            margin: 0;
-            padding: 0;
+            margin: 0; padding: 0;
             overflow-x: hidden;
         }
 
-        /* Telas de Bloqueio (Login e Anti-Cábula) */
         .overlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(13, 17, 23, 0.95);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
+            display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
             z-index: 9999;
-            transition: all 0.3s ease;
         }
 
         .overlay-card {
             background: var(--panel-bg);
-            padding: 40px;
-            border-radius: 8px;
+            padding: 40px; border-radius: 8px;
             border: 1px solid var(--accent-color);
             box-shadow: 0 0 20px rgba(0, 255, 102, 0.2);
-            text-align: center;
-            max-width: 400px;
-            width: 90%;
+            text-align: center; max-width: 400px; width: 90%;
         }
 
         #blur-overlay {
@@ -62,156 +57,80 @@
             box-shadow: 0 0 20px rgba(255, 51, 51, 0.4);
         }
 
-        /* Inputs e Botões Gerais */
         input[type="text"], input[type="password"] {
-            width: 100%;
-            padding: 12px;
-            margin: 10px 0;
-            background: #21262d;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            color: #fff;
-            box-sizing: border-box;
+            width: 100%; padding: 12px; margin: 10px 0;
+            background: #21262d; border: 1px solid var(--border-color);
+            border-radius: 6px; color: #fff; box-sizing: border-box;
         }
-        input:focus {
-            outline: none;
-            border-color: var(--accent-color);
-        }
+        input:focus { outline: none; border-color: var(--accent-color); }
 
         button {
-            background: transparent;
-            color: var(--accent-color);
+            background: transparent; color: var(--accent-color);
             border: 1px solid var(--accent-color);
-            padding: 12px 24px;
-            font-weight: bold;
-            cursor: pointer;
-            border-radius: 6px;
-            transition: 0.2s;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+            padding: 12px 24px; font-weight: bold; cursor: pointer;
+            border-radius: 6px; transition: 0.2s;
+            text-transform: uppercase; letter-spacing: 1px;
         }
         button:hover {
-            background: var(--accent-color);
-            color: #000;
+            background: var(--accent-color); color: #000;
             box-shadow: 0 0 10px rgba(0, 255, 102, 0.4);
         }
 
-        /* Container Principal */
-        .container {
-            max-width: 1200px;
-            margin: 20px auto;
-            padding: 20px;
-        }
+        .container { max-width: 1200px; margin: 20px auto; padding: 20px; }
 
         header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            display: flex; justify-content: space-between; align-items: center;
             border-bottom: 1px solid var(--border-color);
-            padding-bottom: 20px;
-            margin-bottom: 20px;
+            padding-bottom: 20px; margin-bottom: 20px;
         }
 
-        .student-info {
-            font-size: 1.1em;
-            color: var(--accent-color);
-        }
-
-        /* Área de Trabalho (Split Screen) */
         .workspace {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            height: calc(100vh - 200px);
-            min-height: 500px;
+            display: grid; grid-template-columns: 1fr 1fr;
+            gap: 20px; height: calc(100vh - 200px); min-height: 550px;
         }
 
         .panel {
-            background: var(--panel-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
+            background: var(--panel-bg); border: 1px solid var(--border-color);
+            border-radius: 8px; display: flex; flex-direction: column; overflow: hidden;
         }
 
         .panel-header {
-            background: #1f242c;
-            padding: 10px 20px;
+            background: #1f242c; padding: 10px 20px;
             border-bottom: 1px solid var(--border-color);
-            font-weight: bold;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            font-weight: bold; display: flex; justify-content: space-between; align-items: center;
         }
 
-        /* Enunciado Modal/Collapsible */
         #enunciado-content {
-            padding: 20px;
-            overflow-y: auto;
-            flex-grow: 1;
-            display: none;
-            background: #161b22;
-            line-height: 1.6;
+            padding: 20px; overflow-y: auto; flex-grow: 1;
+            display: none; background: #161b22; line-height: 1.6;
         }
 
-        .code-area {
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-        }
+        .code-area { flex-grow: 1; display: flex; flex-direction: column; }
 
-        /* Forçar CodeMirror a ocupar 100% da altura disponível */
-        .CodeMirror {
-            flex-grow: 1;
-            height: 100% !important;
-            font-size: 14px;
-        }
+        .CodeMirror { flex-grow: 1; height: 100% !important; font-size: 14px; }
 
-        /* Consola de Output */
         .output-area {
-            background: #05070a;
-            color: #00ff66;
+            background: #05070a; color: #00ff66;
             font-family: 'Courier New', Courier, monospace;
-            padding: 15px;
-            flex-grow: 1;
-            overflow-y: auto;
-            white-space: pre-wrap;
-            box-sizing: border-box;
+            padding: 15px; flex-grow: 1; overflow-y: auto;
+            white-space: pre-wrap; box-sizing: border-box;
         }
 
         .action-bar {
-            padding: 10px 20px;
-            background: #1f242c;
+            padding: 10px 20px; background: #1f242c;
             border-top: 1px solid var(--border-color);
-            display: flex;
-            justify-content: space-between;
+            display: flex; justify-content: space-between;
         }
 
-        .btn-submit {
-            border-color: #58a6ff;
-            color: #58a6ff;
-        }
+        .btn-submit { border-color: #58a6ff; color: #58a6ff; }
         .btn-submit:hover {
-            background: #58a6ff;
-            color: #000;
+            background: #58a6ff; color: #000;
             box-shadow: 0 0 10px rgba(88, 166, 255, 0.4);
         }
 
-        /* Estilo para listas no enunciado */
-        ul, ol {
-            padding-left: 20px;
-        }
-        li {
-            margin-bottom: 5px;
-        }
-        code {
-            background: #282c34;
-            padding: 2px 6px;
-            border-radius: 4px;
-            color: #e06c75;
-            font-family: monospace;
-        }
+        ul, ol { padding-left: 20px; }
+        li { margin-bottom: 5px; }
+        code { background: #282c34; padding: 2px 6px; border-radius: 4px; color: #e06c75; font-family: monospace; }
     </style>
 </head>
 <body>
@@ -230,9 +149,9 @@
     <div id="blur-overlay" class="overlay">
         <div class="overlay-card">
             <h2 style="color: #fff;">⚠️ TESTE BLOQUEADO</h2>
-            <p style="text-align: justify;">A página perdeu o foco detetando uma possível saída da zona do teste. Chame o Professor para desbloquear.</p>
+            <p style="text-align: justify;">A página perdeu o foco detetando uma possível saída. Chame o Professor para desbloquear.</p>
             <input type="password" id="focus-password" placeholder="Password do Professor">
-            <p id="blur-error" style="color: yellow; display:none; font-size: 14px;">Password de desbloqueio incorreta.</p>
+            <p id="blur-error" style="color: yellow; display:none; font-size: 14px;">Password incorreta.</p>
             <button onclick="unlockFocus()" style="color: #fff; border-color: #fff;">Desbloquear</button>
         </div>
     </div>
@@ -243,7 +162,7 @@
                 <h1 style="margin: 0; color: #fff; font-size: 1.5em;">Exame Prático: Python Dinâmico</h1>
                 <small style="color: #8b949e;">Módulo 6: Estruturas Complexas e Coleções</small>
             </div>
-            <div class="student-info" id="display-student-name">Aluno: Prontificado</div>
+            <div class="student-info" id="display-student-name">Aluno: Aguardando Login</div>
         </header>
 
         <div class="workspace">
@@ -280,27 +199,25 @@
                             <li>Impedir o processamento e avisar se forem introduzidos números fora do intervalo.</li>
                             <li>Dar uma dica especial (ex: "Estás a ferver!") se o palpite estiver a uma distância inferior ou igual a 5 do número correto.</li>
                         </ol>
-                        <strong>Objetivos de Avaliação:</strong> Listas dinâmicas, estruturas de repetição e decisão (<code>while</code> + <code>if/elif/else</code>), lógica complexa e controlo de erros.
                     </div>
                 </div>
 
                 <div class="panel" style="flex-grow: 1;">
                     <div class="panel-header">💻 Consola de Execução (Output)</div>
-                    <div class="output-area" id="console-output">O output do teu código aparecerá aqui após clicares em "Executar Código"...</div>
+                    <div class="output-area" id="console-output">O sistema está pronto. Escreve o teu código e clica em 'Executar Código'...</div>
                 </div>
             </div>
 
             <div class="panel">
                 <div class="panel-header">✒️ Editor de Código Python</div>
                 <div class="code-area">
-                    <textarea id="python-editor"># Desenvolve o teu código aqui
-import random
+                    <textarea id="python-editor">import random
 
-# Exemplo inicial de estrutura
 numero_inteiro = random.randint(1, 50)
 tentativas = []
 
-print("Bem-vindo ao Jogo de Adivinhação!")
+print("=== JOGO INICIADO ===")
+# Desenvolve o teu while e lógica de inputs abaixo:
 </textarea>
                 </div>
                 <div class="action-bar">
@@ -318,11 +235,10 @@ print("Bem-vindo ao Jogo de Adivinhação!")
     <iframe name="hidden_iframe" id="hidden_iframe" style="display:none;" onload="if(submitted) { alert('Teste enviado com sucesso ao Professor!'); window.location.reload(); }"></iframe>
 
     <script>
-        let pyodideInstance = null;
         let isTestUnlocked = false;
         let submitted = false;
 
-        // Inicializar o Editor CodeMirror
+        // Configurar CodeMirror
         const editor = CodeMirror.fromTextArea(document.getElementById("python-editor"), {
             mode: "python",
             theme: "dracula",
@@ -332,14 +248,50 @@ print("Bem-vindo ao Jogo de Adivinhação!")
             lineWrapping: true
         });
 
-        // Carregar o interpretador Pyodide em Background
-        async function initPyodide() {
-            pyodideInstance = await loadPyodide();
-            document.getElementById("console-output").innerText = "=== Interpretador Python pronto. Podes começar! ===";
+        // Configuração das saídas de texto do Skulpt
+        function outf(text) { 
+            const mypre = document.getElementById("console-output"); 
+            mypre.innerText = mypre.innerText + text; 
+        } 
+        
+        // Configuração para o input nativo funcionar via prompt do browser
+        function builtinRead(x) {
+            if (Sk.builtinFiles === undefined || Sk.builtinFiles["files"][x] === undefined)
+                throw "File not found: '" + x + "'";
+            return Sk.builtinFiles["files"][x];
         }
-        initPyodide();
 
-        // Login e Desbloqueio do Teste
+        // Execução do Python com Skulpt
+        function runPython() { 
+            const program = editor.getValue(); 
+            const outputConsole = document.getElementById("console-output"); 
+            outputConsole.innerText = ''; 
+            outputConsole.style.color = "var(--accent-color)";
+
+            Sk.pre = "console-output";
+            // Injeta a função de input nativo
+            Sk.configure({
+                output: outf,
+                read: builtinRead,
+                inputfun: function (prompt) {
+                    return window.prompt(prompt);
+                }
+            }); 
+
+            var myPromise = Sk.misceval.asyncToPromise(function() {
+                return Sk.importMainWithBody("<stdin>", false, program, true);
+            });
+            
+            myPromise.then(function(mod) {
+                // Sucesso
+            }, function(err) {
+                // Captura erros de sintaxe ou execução
+                outputConsole.style.color = "var(--danger-color)";
+                outputConsole.innerText = err.toString();
+            });
+        } 
+
+        // Segurança e Fluxo de Páginas
         function unlockTest() {
             const name = document.getElementById("student-name").value.trim();
             const pass = document.getElementById("test-password").value;
@@ -348,15 +300,12 @@ print("Bem-vindo ao Jogo de Adivinhação!")
                 document.getElementById("login-overlay").style.display = "none";
                 document.getElementById("display-student-name").innerText = "Aluno: " + name;
                 isTestUnlocked = true;
-                
-                // Ativar a escuta de perda de foco apenas após logado
                 setupFocusSecurity();
             } else {
                 document.getElementById("login-error").style.display = "block";
             }
         }
 
-        // Sistema Anti-Cábula (Focus Security)
         function setupFocusSecurity() {
             window.addEventListener('blur', () => {
                 if(isTestUnlocked && !submitted) {
@@ -376,7 +325,6 @@ print("Bem-vindo ao Jogo de Adivinhação!")
             }
         }
 
-        // Mostrar / Ocultar Enunciado
         function toggleEnunciado() {
             const content = document.getElementById("enunciado-content");
             const btn = document.getElementById("btn-enunciado-toggle");
@@ -389,44 +337,8 @@ print("Bem-vindo ao Jogo de Adivinhação!")
             }
         }
 
-        // Executar o Código Python com Pyodide
-        async function runPython() {
-            if (!pyodideInstance) {
-                alert("O interpretador Python ainda está a carregar. Aguarda um momento.");
-                return;
-            }
-
-            const outputConsole = document.getElementById("console-output");
-            outputConsole.innerText = "A executar...\n";
-            const code = editor.getValue();
-
-            // Redirecionar o stdout (print) do Python para a nossa consola HTML
-            pyodideInstance.runPython(`
-                import sys
-                import io
-                sys.stdout = io.StringIO()
-            `);
-
-            try {
-                let cleanCode = code;
-                if (code.includes("input(")) {
-                    outputConsole.innerText = "⚠️ Nota: Para testar códigos com múltiplos 'input()' seguidos no browser de forma nativa, sugere-se simular variáveis fixas temporárias ou testar por partes.\n\nExecutando:\n";
-                }
-
-                await pyodideInstance.runPythonAsync(cleanCode);
-                let stdout = pyodideInstance.runPython("sys.stdout.getvalue()");
-                outputConsole.innerText += stdout || "Código executado com sucesso (sem outputs de print).";
-            } catch (err) {
-                outputConsole.style.color = "var(--danger-color)";
-                outputConsole.innerText = "Erro no Código:\n" + err;
-                return;
-            }
-            outputConsole.style.color = "var(--accent-color)";
-        }
-
-        // Enviar os dados ao Google Forms
         function submitTest() {
-            const confirmation = confirm("Tens a certeza que pretendes entregar o teste? Não poderás fazer mais alterações.");
+            const confirmation = confirm("Pretendes entregar o teste? Não conseguirás alterar mais nada.");
             if (!confirmation) return;
 
             const studentName = document.getElementById("student-name").value.trim();
