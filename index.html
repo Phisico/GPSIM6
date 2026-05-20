@@ -5,8 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GPSI - Teste Prático de Programação</title>
     
-    <script src="https://cdn.jsdelivr.net/npm/skulpt@1.2.0/dist/skulpt.min.js" type="text/javascript"></script>
-    <script src="https://cdn.jsdelivr.net/npm/skulpt@1.2.0/dist/skulpt-stdlib.js" type="text/javascript"></script>
+    <script src="https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js"></script>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm@5.3.0/css/xterm.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/xterm@5.3.0/lib/xterm.min.js"></script>
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.12/codemirror.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.12/theme/dracula.min.css">
@@ -109,11 +111,12 @@
 
         .CodeMirror { flex-grow: 1; height: 100% !important; font-size: 14px; }
 
-        .output-area {
-            background: #05070a; color: #00ff66;
-            font-family: 'Courier New', Courier, monospace;
-            padding: 15px; flex-grow: 1; overflow-y: auto;
-            white-space: pre-wrap; box-sizing: border-box;
+        .terminal-container {
+            background: #05070a;
+            flex-grow: 1;
+            padding: 10px;
+            box-sizing: border-box;
+            overflow: hidden;
         }
 
         .action-bar {
@@ -131,6 +134,11 @@
         ul, ol { padding-left: 20px; }
         li { margin-bottom: 5px; }
         code { background: #282c34; padding: 2px 6px; border-radius: 4px; color: #e06c75; font-family: monospace; }
+        
+        #loading-badge {
+            background: #21262d; color: #e1e4e8; padding: 4px 8px; 
+            border-radius: 4px; font-size: 12px; border: 1px solid var(--border-color);
+        }
     </style>
 </head>
 <body>
@@ -162,6 +170,7 @@
                 <h1 style="margin: 0; color: #fff; font-size: 1.5em;">Exame Prático: Python Dinâmico</h1>
                 <small style="color: #8b949e;">Módulo 6: Estruturas Complexas e Coleções</small>
             </div>
+            <div id="loading-badge">⚙️ A carregar motor de execução...</div>
             <div class="student-info" id="display-student-name">Aluno: Aguardando Login</div>
         </header>
 
@@ -173,38 +182,38 @@
                         <button onclick="toggleEnunciado()" id="btn-enunciado-toggle" style="padding: 5px 10px; font-size: 12px;">Mostrar</button>
                     </div>
                     <div id="enunciado-content">
-                        <strong>Problema – Jogo: Adivinha o número com histórico (Nível Avançado)</strong>
-                        <p>Cria um programa em Python que simule um jogo interativo com os seguintes requisitos:</p>
+                        <strong>Problema – Simulador de Alocação de Rede (Nível Avançado)</strong>
+                        <p>Como administradores de redes, a vossa equipa precisa de testar o comportamento de um algoritmo de alocação automática de largura de banda (em Gbps) para um servidor cloud dedicado. Cria um programa que:</p>
                         <ul>
-                            <li>Gera um número aleatório entre 1 e 50: <code>numero_inteiro = random.randint(1, 50)</code></li>
-                            <li>O utilizador tenta adivinhar o número consecutivamente através de inputs.</li>
-                            <li>Guarda todas as tentativas numa lista: <code>tentativas = []</code></li>
-                            <li><strong>A cada tentativa errada:</strong>
+                            <li>Gera um valor de largura de banda ideal aleatório entre 1 e 50 Gbps: <code>numero_inteiro = random.randint(1, 50)</code></li>
+                            <li>O utilizador tenta ajustar/adivinhar o valor consecutivamente através de inputs na consola.</li>
+                            <li>Guarda todas as velocidades testadas numa lista: <code>tentativas = []</code></li>
+                            <li><strong>A cada teste incorreto:</strong>
                                 <ul>
-                                    <li>Diz se o número secreto é maior ou menor que o palpite.</li>
-                                    <li>Adiciona o palpite à lista de tentativas.</li>
+                                    <li>Diz se o valor introduzido está <strong>"ACIMA"</strong> ou <strong>"ABAIXO"</strong> da largura de banda ideal.</li>
+                                    <li>Adiciona a velocidade testada à lista de tentativas.</li>
                                 </ul>
                             </li>
-                            <li><strong>Quando acertar, mostra:</strong>
+                            <li><strong>Quando estabilizar no valor ideal:</strong>
                                 <ul>
-                                    <li>O número total de tentativas.</li>
-                                    <li>A lista completa de tentativas realizadas.</li>
-                                    <li>A <em>melhor tentativa</em> (a mais próxima do número secreto antes de acertar).</li>
+                                    <li>Mostra o número total de testes realizados.</li>
+                                    <li>Mostra a lista completa de velocidades testadas.</li>
+                                    <li>Mostra a <em>melhor tentativa</em> (a velocidade mais próxima do valor ideal antes de estabilizar).</li>
                                 </ul>
                             </li>
                         </ul>
                         <strong>⚡ Desafios Avançados (Obrigatório):</strong>
                         <ol>
-                            <li>Mostrar apenas tentativas únicas na lista final (remover duplicados).</li>
-                            <li>Impedir o processamento e avisar se forem introduzidos números fora do intervalo.</li>
-                            <li>Dar uma dica especial (ex: "Estás a ferver!") se o palpite estiver a uma distância inferior ou igual a 5 do número correto.</li>
+                            <li>Mostrar apenas velocidades únicas na lista final de estatísticas (remover duplicados).</li>
+                            <li>Impedir o processamento e avisar o utilizador se forem introduzidos números fora do intervalo suportado pelo hardware Gbps.</li>
+                            <li>Dar um alerta especial (ex: "AVISO: Sinal a ferver! Estás muito perto da estabilização da rede!") se o palpite estiver a uma distância inferior ou igual a 5 Gbps do número correto.</li>
                         </ol>
                     </div>
                 </div>
 
                 <div class="panel" style="flex-grow: 1;">
-                    <div class="panel-header">💻 Consola de Execução (Output)</div>
-                    <div class="output-area" id="console-output">O sistema está pronto. Escreve o teu código e clica em 'Executar Código'...</div>
+                    <div class="panel-header">💻 Consola de Execução Linux</div>
+                    <div class="terminal-container" id="terminal"></div>
                 </div>
             </div>
 
@@ -213,15 +222,11 @@
                 <div class="code-area">
                     <textarea id="python-editor">import random
 
-numero_inteiro = random.randint(1, 50)
-tentativas = []
-
-print("=== JOGO INICIADO ===")
 # Desenvolve o teu while e lógica de inputs abaixo:
 </textarea>
                 </div>
                 <div class="action-bar">
-                    <button onclick="runPython()" style="background: rgba(0,255,102,0.1);">▶ Executar Código (Run)</button>
+                    <button id="run-btn" onclick="runPythonCode()" style="border-color: #888; color: #888;" disabled>▶ Aguardando Motor</button>
                     <button onclick="submitTest()" class="btn-submit">📤 Entregar Teste</button>
                 </div>
             </div>
@@ -234,114 +239,178 @@ print("=== JOGO INICIADO ===")
     </form>
     <iframe name="hidden_iframe" id="hidden_iframe" style="display:none;" onload="if(submitted) { alert('Teste enviado com sucesso ao Professor!'); window.location.reload(); }"></iframe>
 
-<script>
-    let isTestUnlocked = false;
-    let submitted = false;
+    <script>
+        let isTestUnlocked = false;
+        let submitted = false;
+        let pyodide = null;
+        let term = null;
+        let currentResolve = null;
+        let currentInputLine = "";
 
-    // Configurar CodeMirror
-    const editor = CodeMirror.fromTextArea(document.getElementById("python-editor"), {
-        mode: "python",
-        theme: "dracula",
-        lineNumbers: true,
-        indentUnit: 4,
-        tabSize: 4,
-        lineWrapping: true
-    });
+        // Inicializar terminal estável
+        function initTerminal() {
+            term = new Terminal({
+                cursorBlink: true,
+                theme: { background: '#05070a', foreground: '#00ff66', cursor: '#00ff66' },
+                fontSize: 14,
+                fontFamily: 'Courier New, Courier, monospace'
+            });
+            term.open(document.getElementById('terminal'));
+            term.writeln("Terminal Inicializado. Carregue em 'Executar Código'...");
+            
+            term.onData(data => {
+                if (!currentResolve) return;
+                
+                if (data === "\r") { // Enter
+                    term.write("\r\n");
+                    let resolve = currentResolve;
+                    let val = currentInputLine;
+                    currentInputLine = "";
+                    currentResolve = null;
+                    resolve(val);
+                } else if (data === "\x7f") { // Backspace
+                    if (currentInputLine.length > 0) {
+                        currentInputLine = currentInputLine.slice(0, -1);
+                        term.write("\b \b");
+                    }
+                } else {
+                    currentInputLine += data;
+                    term.write(data);
+                }
+            });
+        }
 
-    // Configuração das saídas de texto do Skulpt
-    function outf(text) { 
-        const mypre = document.getElementById("console-output"); 
-        mypre.innerText = mypre.innerText + text; 
-    } 
-    
-    // Configuração para o input nativo funcionar via prompt do browser
-    function builtinRead(x) {
-        if (Sk.builtinFiles === undefined || Sk.builtinFiles["files"][x] === undefined)
-            throw "File not found: '" + x + "'";
-        return Sk.builtinFiles["files"][x];
-    }
+        // Configuração estável do Pyodide
+        async function initPython() {
+            initTerminal();
+            try {
+                pyodide = await loadPyodide();
+                
+                // Redireciona o stdout para o Xterm
+                pyodide.setStdout({
+                    batched: (text) => { term.writeln(text); }
+                });
 
-    // Execução do Python com Skulpt
-    function runPython() { 
-        const program = editor.getValue(); 
-        const outputConsole = document.getElementById("console-output"); 
-        outputConsole.innerText = ''; 
-        outputConsole.style.color = "var(--accent-color)";
+                // Criar ponte JS para recolha assíncrona de dados
+                window.jsInputBridge = function(promptText) {
+                    term.write(promptText);
+                    return new Promise((resolve) => {
+                        currentInputLine = "";
+                        currentResolve = resolve;
+                    });
+                };
 
-        Sk.pre = "console-output";
-        Sk.configure({
-            output: outf,
-            read: builtinRead,
-            inputfun: function (prompt) {
-                return window.prompt(prompt);
+                // Atualizar interface de prontidão
+                document.getElementById("loading-badge").style.backgroundColor = "var(--accent-color)";
+                document.getElementById("loading-badge").style.color = "#000";
+                document.getElementById("loading-badge").innerText = "✔ Compilador Ativo";
+                
+                const rBtn = document.getElementById("run-btn");
+                rBtn.disabled = false;
+                rBtn.style.borderColor = "var(--accent-color)";
+                rBtn.style.color = "var(--accent-color)";
+            } catch (err) {
+                term.writeln("Erro catastrófico no motor: " + err);
             }
-        }); 
-
-        var myPromise = Sk.misceval.asyncToPromise(function() {
-            return Sk.importMainWithBody("<stdin>", false, program, true);
-        });
-        
-        myPromise.then(function(mod) {
-            // Sucesso
-        }, function(err) {
-            outputConsole.style.color = "var(--danger-color)";
-            outputConsole.innerText = err.toString();
-        });
-    } 
-
-    // Segurança e Fluxo de Páginas
-    function unlockTest() {
-        const name = document.getElementById("student-name").value.trim();
-        const pass = document.getElementById("test-password").value;
-
-        if (name !== "" && pass === "testemod6") {
-            document.getElementById("login-overlay").style.display = "none";
-            document.getElementById("display-student-name").innerText = "Aluno: " + name;
-            isTestUnlocked = true;
-            setupFocusSecurity();
-        } else {
-            document.getElementById("login-error").style.display = "block";
         }
-    }
 
-    // SISTEMA ANTI-CÁBULA CORRIGIDO (Ignora os prompts de input)
-    function setupFocusSecurity() {
-        document.addEventListener('visibilitychange', () => {
-            if (document.visibilityState === 'hidden' && isTestUnlocked && !submitted) {
-                document.getElementById("blur-overlay").style.display = "flex";
+        // Executar o Script corrigindo os inputs estruturalmente em runtime
+        async function runPythonCode() {
+            term.clear();
+            currentResolve = null;
+            currentInputLine = "";
+            
+            let rawCode = editor.getValue();
+            
+            term.writeln("\x1b[33m--- A iniciar execução do script ---\x1b[0m\r\n");
+            
+            // Compilador Inteligente Javascript: Transforma os "input(" em "await jsInputBridge("
+            // Mantém os comentários, strings e espaços intactos sem quebrar sintaxe do aluno.
+            let processedCode = rawCode.replace(/input\s*\((.*?)\)/g, 'await js.jsInputBridge($1)');
+
+            // Envolve o script completo numa corrotina assíncrona invisível
+            let runnablePayload = `
+import builtins
+import js
+
+async def __student_main():
+    try:
+        # Bloco de execução isolado
+${processedCode.split('\n').map(line => '        ' + line).join('\n')}
+    except Exception as ex:
+        print(f"\\n[Erro em Runtime]: {ex}")
+
+import asyncio
+asyncio.ensure_future(__student_main())
+`;
+
+            try {
+                await pyodide.runPythonAsync(runnablePayload);
+            } catch (err) {
+                term.writeln("\r\n\x1b[31mErro de Sintaxe Crítico:\r\n" + err.toString() + "\x1b[0m");
             }
+        }
+
+        const editor = CodeMirror.fromTextArea(document.getElementById("python-editor"), {
+            mode: "python",
+            theme: "dracula",
+            lineNumbers: true,
+            indentUnit: 4,
+            tabSize: 4,
+            lineWrapping: true
         });
-    }
 
-    function unlockFocus() {
-        const pass = document.getElementById("focus-password").value;
-        if (pass === "bananas") {
-            document.getElementById("blur-overlay").style.display = "none";
-            document.getElementById("focus-password").value = "";
-            document.getElementById("blur-error").style.display = "none";
-        } else {
-            document.getElementById("blur-error").style.display = "block";
+        function unlockTest() {
+            const name = document.getElementById("student-name").value.trim();
+            const pass = document.getElementById("test-password").value;
+
+            if (name !== "" && pass === "testemod6") {
+                document.getElementById("login-overlay").style.display = "none";
+                document.getElementById("display-student-name").innerText = "Aluno: " + name;
+                isTestUnlocked = true;
+                setupFocusSecurity();
+            } else {
+                document.getElementById("login-error").style.display = "block";
+            }
         }
-    }
 
-    function toggleEnunciado() {
-        const content = document.getElementById("enunciado-content");
-        const btn = document.getElementById("btn-enunciado-toggle");
-        if (content.style.display === "none" || content.style.display === "") {
-            content.style.display = "block";
-            btn.innerText = "Ocultar";
-        } else {
-            content.style.display = "none";
-            btn.innerText = "Mostrar";
+        function setupFocusSecurity() {
+            document.addEventListener('visibilitychange', () => {
+                if (document.visibilityState === 'hidden' && isTestUnlocked && !submitted) {
+                    document.getElementById("blur-overlay").style.display = "flex";
+                }
+            });
         }
-    }
 
-    function submitTest() {
-        const confirmation = confirm("Pretendes entregar o teste? Não conseguirás alterar mais nada.");
-        if (!confirmation) return;
+        function unlockFocus() {
+            const pass = document.getElementById("focus-password").value;
+            if (pass === "bananas") {
+                document.getElementById("blur-overlay").style.display = "none";
+                document.getElementById("focus-password").value = "";
+                document.getElementById("blur-error").style.display = "none";
+            } else {
+                document.getElementById("blur-error").style.display = "block";
+            }
+        }
 
-        const studentName = document.getElementById("student-name").value.trim();
-        const studentCode = editor.getValue();
+        function toggleEnunciado() {
+            const content = document.getElementById("enunciado-content");
+            const btn = document.getElementById("btn-enunciado-toggle");
+            if (content.style.display === "none" || content.style.display === "") {
+                content.style.display = "block";
+                btn.innerText = "Ocultar";
+            } else {
+                content.style.display = "none";
+                btn.innerText = "Mostrar";
+            }
+        }
+
+        function submitTest() {
+            const confirmation = confirm("Pretendes entregar o teste? Não conseguirás alterar mais nada.");
+            if (!confirmation) return;
+
+            const studentName = document.getElementById("student-name").value.trim();
+            const studentCode = editor.getValue();
 
             document.getElementById("form-student-name").value = studentName;
             document.getElementById("form-student-code").value = studentCode;
@@ -349,6 +418,8 @@ print("=== JOGO INICIADO ===")
             submitted = true;
             document.getElementById("google-form").submit();
         }
-</script>
+
+        window.addEventListener('DOMContentLoaded', initPython);
+    </script>
 </body>
 </html>
